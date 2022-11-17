@@ -1,20 +1,33 @@
 package HW_6.DNS;
 
-import HW_6.DNS.MainPage;
-import HW_6.DNS.MenuBlock;
-import HW_6.DNS.MultiCookerPage;
+import HW_7.JunitExtension;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import io.qameta.allure.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
+
+import java.io.ByteArrayInputStream;
 
 
 public class MultiCookerTest {
+
+    @ExtendWith(JunitExtension.class)
+
     WebDriver driver;
     MainPage mainPage;
+    @RegisterExtension
+    JunitExtension testWatcher = new JunitExtension();
 
 
     @BeforeAll
@@ -31,6 +44,10 @@ public class MultiCookerTest {
     }
 
     @Test
+    @Flaky
+    @Severity(value = SeverityLevel.CRITICAL)
+    @Description("Наведение курсором мыши на раскрывающийся список, " +
+            "и добавление рандомной мультиварки в избранное")
     void addToFavouriteTest() throws InterruptedException {
         mainPage.clickConfirmCity()
                 .menuBlock.hoverMouseToMenuAndClickMultiCooker()
@@ -41,6 +58,9 @@ public class MultiCookerTest {
     }
 
     @Test
+    @Severity(value = SeverityLevel.CRITICAL)
+    @Description("Наведение курсором мыши на раскрывающийся список, " +
+            "добавление рандомной мультиварки в список сравнения")
     void compareMultiCookers() throws InterruptedException {
         mainPage.clickConfirmCity()
                 .menuBlock.hoverMouseToMenuAndClickMultiCooker()
@@ -54,12 +74,16 @@ public class MultiCookerTest {
                 .assertTitle();
     }
 
+    @AfterEach
+    void killBrowser() {
+        LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
+        for (LogEntry log: logs) {
+            Allure.addAttachment("Элемент лога браузера", log.getMessage());
+        }
 
-//
-//    @AfterEach
-//    void killBrowser() {
-//        driver.quit();}
-//
+        testWatcher.setScreenshot(new ByteArrayInputStream(((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES)));
+        driver.quit();
+    }
 
 }
 
